@@ -16,13 +16,24 @@ import { MathUtils } from 'three';
 import * as random from 'maath/random';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "@mediapipe/tasks-vision";
 
-// --- 动态生成照片列表 (top.jpg + 1.jpg 到 31.jpg) ---
-const TOTAL_NUMBERED_PHOTOS = 31;
-// 修改：将 top.jpg 加入到数组开头
-const bodyPhotoPaths = [
-  '/photos/top.jpg',
-  ...Array.from({ length: TOTAL_NUMBERED_PHOTOS }, (_, i) => `/photos/${i + 1}.jpg`)
-];
+// --- 动态生成照片列表---
+// 1. 先定义一个空的全局变量
+let bodyPhotoPaths = [];
+
+// 2. 请求接口获取 thumbnails 里的所有文件名
+fetch('/api/photos')
+  .then(response => response.json())
+  .then(files => {
+    // files 是后端返回的文件名数组，例如 ["1.jpg", "abc.png", "photo.jpg"]
+
+    // 直接把文件名转换成路径 /thumbnails/xxx.jpg
+    bodyPhotoPaths = files.map(file => `/thumbnails/${file}`);
+
+    console.log('所有图片已加载:', bodyPhotoPaths);
+  })
+  .catch(error => {
+    console.error('获取图片列表失败:', error);
+  });
 
 // --- 视觉配置 ---
 const CONFIG = {
