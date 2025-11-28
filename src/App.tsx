@@ -27,7 +27,7 @@ fetch('/api/photos')
     // files 是后端返回的文件名数组，例如 ["1.jpg", "abc.png", "photo.jpg"]
 
     // 直接把文件名转换成路径 /thumbnails/xxx.jpg
-    bodyPhotoPaths = files.map(file => `/thumbnails/${file}`);
+    bodyPhotoPaths = files.map(file => `/public/thumbnails/${file}`);
 
     console.log('所有图片已加载:', bodyPhotoPaths);
   })
