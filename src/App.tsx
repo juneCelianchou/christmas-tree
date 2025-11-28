@@ -17,7 +17,7 @@ import * as random from 'maath/random';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "@mediapipe/tasks-vision";
 
 // --- 动态生成照片列表---
-const TOTAL_LIGHTS = 32;
+const TOTAL_LIGHTS = 70;
 let bodyPhotoPaths = [];
 
 fetch('/api/photos')
@@ -40,7 +40,6 @@ fetch('/api/photos')
 
     // 截取刚好需要的数量
     bodyPhotoPaths = validPaths.slice(0, TOTAL_LIGHTS);
-
     console.log('最终加载的图片路径:', bodyPhotoPaths);
   })
   .catch(error => {
