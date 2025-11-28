@@ -126,9 +126,9 @@
 
                     // 图片预览
                     const img = document.createElement('img');
-                    img.src = '/public/thumbnails/' + file;
+                    img.src = '/thumbnails/' + file;
                     img.onerror = function() {
-                        this.src = '/public/photos/' + file; // 如果缩略图不存在，回退显示原图
+                        this.src = '/photos/' + file; // 如果缩略图不存在，回退显示原图
                     }
                     img.style.width = '50px';
                     img.style.height = '50px';
