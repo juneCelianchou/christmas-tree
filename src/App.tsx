@@ -17,19 +17,39 @@ import * as random from 'maath/random';
 import { GestureRecognizer, FilesetResolver, DrawingUtils } from "@mediapipe/tasks-vision";
 
 // --- 动态生成照片列表---
-// 1. 先定义一个空的全局变量
+const TOTAL_LIGHTS = 32;
 let bodyPhotoPaths = [];
 
-// 2. 请求接口获取 thumbnails 里的所有文件名
 fetch('/api/photos')
   .then(response => response.json())
   .then(files => {
-    // files 是后端返回的文件名数组，例如 ["1.jpg", "abc.png", "photo.jpg"]
+    // 防止文件夹为空导致崩溃
+    if (files.length === 0) {
+        console.warn('没有图片，使用默认图');
+        files = ['default.jpg'];
+    }
 
-    // 直接把文件名转换成路径 /thumbnails/xxx.jpg
-    bodyPhotoPaths = files.map(file => `/public/thumbnails/${file}`);
+    // === 修正点 1：去掉 /public，只保留 /thumbnails ===
+    let validPaths = files.map(file => `/thumbnails/${file}`);
 
-    console.log('所有图片已加载:', bodyPhotoPaths);
+    // === 修正点 2：循环补全图片，直到填满所有灯泡 ===
+    // 比如：只有 [A, B]，补全成 [A, B, A, B, A, B...]
+    while (validPaths.length < TOTAL_LIGHTS) {
+        validPaths = validPaths.concat(validPaths);
+    }
+
+    // 截取刚好需要的数量
+    bodyPhotoPaths = validPaths.slice(0, TOTAL_LIGHTS);
+
+    console.log('最终加载的图片路径:', bodyPhotoPaths);
+
+    // ===========================================
+    // ⚠️ 极其重要：在这里启动你的圣诞树！
+    // ===========================================
+    // 你的主程序可能叫 init(), main(), 或者 renderTree()
+    // 必须在这里调用它，否则页面是空白的
+    if (typeof init === 'function') init();
+    // 或者 if (typeof render === 'function') render();
   })
   .catch(error => {
     console.error('获取图片列表失败:', error);
