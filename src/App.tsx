@@ -42,14 +42,6 @@ fetch('/api/photos')
     bodyPhotoPaths = validPaths.slice(0, TOTAL_LIGHTS);
 
     console.log('最终加载的图片路径:', bodyPhotoPaths);
-
-    // ===========================================
-    // ⚠️ 极其重要：在这里启动你的圣诞树！
-    // ===========================================
-    // 你的主程序可能叫 init(), main(), 或者 renderTree()
-    // 必须在这里调用它，否则页面是空白的
-    if (typeof init === 'function') init();
-    // 或者 if (typeof render === 'function') render();
   })
   .catch(error => {
     console.error('获取图片列表失败:', error);

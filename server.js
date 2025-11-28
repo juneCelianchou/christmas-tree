@@ -12,13 +12,14 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
-app.use(express.static(path.join(__dirname, 'public')));
+
 // === 路径配置 ===
 const photoDir = path.join(__dirname, 'public','photos');
 const thumbDir = path.join(__dirname, 'public','thumbnails'); // 新增缩略图目录
-
+app.use('/thumbnails', express.static(thumbDir));
+app.use('/photo', express.static(photoDir));
 // 确保文件夹存在
-if (!fs.existsSync(photoDir)) fs.mkdirSync(photoDir);
+if (!fs.existsSync(photoDir)) fs.mkdirSync(photoDir, { recursive: true });
 if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir, { recursive: true }); // 创建缩略图文件夹
 
 // Multer 配置
