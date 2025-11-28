@@ -6,6 +6,207 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>christmas-tree</title>
   </head>
+  <div id="photo-manager" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%; /* 全屏高度 */
+    width: 280px; /* 固定宽度 */
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    box-sizing: border-box;
+    border-right: 2px solid #4CAF50;
+    z-index: 9999;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0); /* 默认展开状态 */
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;">
+
+    <div onclick="toggleManager()" title="切换显示" style="
+        position: absolute;
+        right: -30px;
+        top: 20px;
+        width: 30px;
+        height: 60px;
+        background: #4CAF50;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 0 8px 8px 0;
+        font-weight: bold;
+        box-shadow: 3px 0 5px rgba(0,0,0,0.3);
+        user-select: none;">
+        <span id="toggle-icon">◀</span>
+    </div>
+
+    <div style="
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid #444;">
+        <h3 style="margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+            📸 图片管理
+        </h3>
+        <small style="color: #aaa; font-size: 12px; margin-top: 5px; display: block;">管理 photo 文件夹</small>
+    </div>
+
+    <div id="manager-content" style="
+        padding: 20px;
+        flex: 1; /* 占满剩余高度 */
+        overflow-y: auto;">
+
+        <div style="margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 14px;">上传新图:</label>
+            <input type="file" id="fileInput" accept="image/*" style="color: white; font-size: 12px; width: 100%; margin-bottom: 10px;">
+            <button onclick="uploadPhoto()" style="
+                width: 100%;
+                padding: 8px;
+                cursor: pointer;
+                background: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-weight: bold;">确认上传</button>
+        </div>
+
+        <h4 style="margin: 0 0 10px 0; border-bottom: 1px solid #444; padding-bottom: 5px;">现有图片列表</h4>
+        <div id="photo-list" style="display: flex; flex-direction: column; gap: 10px;">
+            </div>
+    </div>
+</div>
+
+<script>
+    // const API_BASE = `http://${window.location.hostname}:3000`;
+    let isExpanded = true;
+
+    // 页面加载时获取图片列表
+    document.addEventListener('DOMContentLoaded', loadPhotos);
+
+    // === 收缩/展开 切换函数 ===
+    function toggleManager() {
+        const panel = document.getElementById('photo-manager');
+        const icon = document.getElementById('toggle-icon');
+
+        if (isExpanded) {
+            // 收起：向左移出屏幕
+            panel.style.transform = 'translateX(-100%)';
+            icon.innerText = '▶'; // 箭头向右，提示可展开
+        } else {
+            // 展开：恢复位置
+            panel.style.transform = 'translateX(0)';
+            icon.innerText = '◀'; // 箭头向左
+        }
+        isExpanded = !isExpanded;
+    }
+
+    // === 加载图片列表 ===
+    function loadPhotos() {
+        fetch('/api/photos')
+            .then(res => res.json())
+            .then(files => {
+                const list = document.getElementById('photo-list');
+                list.innerHTML = '';
+
+                if(files.length === 0) {
+                    list.innerHTML = '<p style="color:#aaa; text-align:center;">暂无图片</p>';
+                    return;
+                }
+
+                files.forEach(file => {
+                    // 创建列表项容器
+                    const item = document.createElement('div');
+                    item.style.display = 'flex';
+                    item.style.alignItems = 'center';
+                    item.style.gap = '10px';
+                    item.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    item.style.padding = '8px';
+                    item.style.borderRadius = '6px';
+
+                    // 图片预览
+                    const img = document.createElement('img');
+                    img.src = '/public/thumbnails/' + file;
+                    img.onerror = function() {
+                        this.src = '/public/photos/' + file; // 如果缩略图不存在，回退显示原图
+                    }
+                    img.style.width = '50px';
+                    img.style.height = '50px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '4px';
+                    img.style.border = '1px solid #555';
+
+                    // 文件名和删除按钮容器
+                    const infoDiv = document.createElement('div');
+                    infoDiv.style.flex = '1';
+                    infoDiv.style.overflow = 'hidden';
+
+                    // 文件名
+                    const name = document.createElement('div');
+                    name.innerText = file;
+                    name.title = file;
+                    name.style.fontSize = '12px';
+                    name.style.whiteSpace = 'nowrap';
+                    name.style.overflow = 'hidden';
+                    name.style.textOverflow = 'ellipsis';
+                    name.style.marginBottom = '5px';
+
+                    // 删除按钮
+                    const btn = document.createElement('button');
+                    btn.innerText = '删除';
+                    btn.style.padding = '2px 8px';
+                    btn.style.fontSize = '11px';
+                    btn.style.backgroundColor = '#ff4444';
+                    btn.style.color = 'white';
+                    btn.style.border = 'none';
+                    btn.style.cursor = 'pointer';
+                    btn.style.borderRadius = '3px';
+                    btn.onclick = () => deletePhoto(file);
+
+                    infoDiv.appendChild(name);
+                    infoDiv.appendChild(btn);
+
+                    item.appendChild(img);
+                    item.appendChild(infoDiv);
+                    list.appendChild(item);
+                });
+            })
+            .catch(err => console.error('加载图片失败:', err));
+    }
+
+    // === 上传图片 ===
+    function uploadPhoto() {
+        const input = document.getElementById('fileInput');
+        if (input.files.length === 0) {
+            alert('请先选择一张图片！');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', input.files[0]);
+
+        fetch('/api/upload', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            input.value = '';
+            loadPhotos();
+        })
+        .catch(err => alert('上传出错'));
+    }
+
+    // === 删除图片 ===
+    function deletePhoto(filename) {
+        if(!confirm(`确定要删除 ${filename} 吗?`)) return;
+
+        fetch(`/api/photo/${filename}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+            loadPhotos();
+        })
+        .catch(err => alert('删除出错'));
+    }
+</script>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
